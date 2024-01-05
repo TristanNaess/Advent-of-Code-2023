@@ -17,12 +17,12 @@ struct Lens
         std::size_t delim = code.find_first_of("-=");
         op = code[delim];
         label = code.substr(0, delim);
-        if (op == '=') { focal_length = std::stoul(code.substr(delim+1)); }
+        if (op == '=') { focal_length = code[delim+1] - '0'; }
     }
 
-    std::string label;
-    char op;
-    unsigned int focal_length;
+    std::string label = "";
+    char op = '\0';
+    unsigned int focal_length = 0;
 };
 
 bool operator==(const Lens& l1, const Lens& l2)
@@ -43,6 +43,16 @@ unsigned int hash(const std::string& str)
     return val;
 }
 
+// for whatever reason, std::find() would segfault like 50% of the time
+std::vector<Lens>::iterator find(std::vector<Lens>& vec, const Lens& l)
+{
+    for (auto itr = vec.begin(); itr < vec.end(); itr++)
+    {
+        if (*itr == l) return itr;
+    }
+    return vec.end();
+}
+
 class Hashmap
 {
     public:
@@ -52,7 +62,8 @@ class Hashmap
         {
             std::size_t index = hash(l.label);
             std::vector<Lens>& box = boxes[index];
-            auto itr = std::find(box.begin(), box.end(), l);
+            auto itr = find(box, l);
+            //auto itr = std::find(box.begin(), box.end(), l);
             if (itr == box.end()) { return; }
             box.erase(itr);
         }
@@ -61,9 +72,10 @@ class Hashmap
         {
             std::size_t index = hash(l.label);
             std::vector<Lens>& box = boxes[index];
-            auto itr = std::find(box.begin(), box.end(), l);
+            auto itr = find(box, l);
+            //auto itr = std::find(box.begin(), box.end(), l);
             if (itr == box.end()) { box.push_back(l); return; }
-            *itr = l;
+            itr->focal_length = l.focal_length;
         }
 
         unsigned long int power() const
@@ -130,24 +142,29 @@ int main(int argc, char** argv)
 
     std::vector<std::string> steps;
     std::string buffer;
-    while (std::getline(file, buffer))
-    {
-        std::istringstream ss{buffer};
-        while (std::getline(ss, buffer, ','))
-        {
-            Lens l{buffer};
-            switch (l.op)
-            {
-                case '-':
-                    boxes.remove(l);
-                    break;
-                case '=':
-                    boxes.add(l);
-                    break;
-            }
 
-            //std::cout << buffer << ":\n" << boxes << '\n';
+    std::getline(file, buffer);
+    std::istringstream ss{buffer};
+    
+    while (std::getline(ss, buffer, ','))
+    {
+        Lens l{buffer};
+        /*
+        std::cout << l.label << ' ' << l.op;
+        if (l.focal_length != 0) std::cout << ' ' << l.focal_length;
+        std::cout << '\n';
+        */
+        switch (l.op)
+        {
+            case '-':
+                boxes.remove(l);
+                break;
+            case '=':
+                boxes.add(l);
+                break;
         }
+
+        //std::cout << buffer << ":\n" << boxes << '\n';
     }
 
     file.close();
