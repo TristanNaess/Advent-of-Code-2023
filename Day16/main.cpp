@@ -3,40 +3,38 @@
 #include <string>
 #include <vector>
 
-struct Grid
+
+class Grid
 {
-    Grid(const std::vector<std::string>& data)
-    {
-        width = data.front().size();
-        height = data.size();
-        m_data.reserve(width * height);
-        for (const auto& l : data)
+    public:
+        Grid(const std::vector<std::string>& data);
+
+        std::size_t activate()
         {
-            for (const char c : l)
-            {
-                m_data.push_back(c);
-            }
+            // add beam{0,0,Right} to queue
+            // for each beam check cell, make hot, close paths, add next step to queue
+
+            // return number of hot cells
+            return 0;
         }
-    }
 
-    char operator[](std::size_t x, std::size_t y)
-    {
-        if (x > m_width || y > m_height) throw std::out_of_bounds("Coordinate is outside the grid");
-        return m_data[y*m_width + x];
-    }
+    private:
+        struct Cell
+        {
+            bool hot;
+            // See if there's a better way to store directions, that can be reused in Beam
+            struct Dirs { bool Up = false, Down = false, Left = false, Right = false; };
 
-    std::vector<char> m_data;
-    std::size_t m_width, m_height;
-};
+            Dirs closed_paths;
+        };
 
-struct Turtle
-{
-    enum class Direction { Up, Down, Left, Right };
+        std::vector<Cell> cells;
 
-    std::size_t x, y;
-    Direction facing;
-
-    bool alive = true;
+        struct Beam
+        {
+            std::size_t x, y;
+            // store direction somehow
+        };
 };
 
 int main(int argc, char** argv)
@@ -60,18 +58,6 @@ int main(int argc, char** argv)
     while (std::getline(file, buffer))
     {
         data.push_back(buffer);
-    }
-
-    Grid grid{data};
-
-    std::vector<Turtle> beams{ {.x = 0, .y = 0, .facing = Turtle::Direction::Right, .alive = true} };
-
-    while (beams.size() > 0)
-    {
-        for (Turtle b : beams)
-        {
-            // turtle move logic here
-        }
     }
 
 }

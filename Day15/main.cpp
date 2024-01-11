@@ -78,6 +78,15 @@ class Hashmap
             itr->focal_length = l.focal_length;
         }
 
+        // for debugging, not used in solution
+        void insert(const Lens& l)
+        {
+            std::size_t index = hash(l.label);
+            std::vector<Lens>& box = boxes[index];
+            box.push_back(l);
+        }
+
+        /*
         unsigned long int power() const
         {
             unsigned long int power = 0;
@@ -93,6 +102,19 @@ class Hashmap
                 box_i++;
             }
 
+            return power;
+        }
+        */
+        unsigned long int power() const
+        {
+            unsigned long int power = 0;
+            for (std::size_t box = 0; box < boxes.size(); box++)
+            {
+                for (std::size_t slot = 0; slot < boxes[box].size(); slot++)
+                {
+                    power += boxes[box][slot].focal_length * (box+1) * (slot+1);
+                }
+            }
             return power;
         }
 
@@ -112,7 +134,16 @@ std::ostream& operator<<(std::ostream& os, const Hashmap& h)
             os << "Box " << i << ": ";
             for (const auto l : b)
             {
-                os << '[' << l.label << ' ' << l.focal_length << "] ";
+                os << '[' << l.label << ' ';
+                if (l.op == '-')
+                {
+                    os << "-]";
+                }
+                else
+                {
+                    os << l.focal_length << "] ";
+                }
+                //os << '[' << l.label << ' ' << l.focal_length << "] ";
             }
             os << '\n';
         }
@@ -144,6 +175,8 @@ int main(int argc, char** argv)
     std::string buffer;
 
     std::getline(file, buffer);
+    file.close();
+    
     std::istringstream ss{buffer};
     
     while (std::getline(ss, buffer, ','))
@@ -154,6 +187,8 @@ int main(int argc, char** argv)
         if (l.focal_length != 0) std::cout << ' ' << l.focal_length;
         std::cout << '\n';
         */
+
+        //*
         switch (l.op)
         {
             case '-':
@@ -163,11 +198,18 @@ int main(int argc, char** argv)
                 boxes.add(l);
                 break;
         }
+        //*/
 
-        //std::cout << buffer << ":\n" << boxes << '\n';
+        /*
+        std::cout << "\033[2J" << buffer << ":\n" << boxes << '\n';
+        getchar();
+        */
+
+        // just add them all to the hashmap
+        //boxes.insert(l);
+
     }
-
-    file.close();
+    //std::cout << boxes << '\n';
 
     std::cout << "Power: " << boxes.power() << '\n';
 }
