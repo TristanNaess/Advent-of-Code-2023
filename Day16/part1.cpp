@@ -71,48 +71,10 @@ class Grid
             return m_data[m_width * y + x];
         }
 
-        void deactivate()
-        {
-            std::for_each(m_data.begin(), m_data.end(), [](Cell& c){ c.hot = false; c.accessed = Direction::None;});
-        }
-
-        std::size_t max_activate()
-        {
-            std::size_t max = 0;
-
-            for (std::size_t y = 0; y < m_height; y++) // left side
-            {
-                deactivate();
-                beams.push(Beam{ .x = 0, .y = y, .dir = Direction::Right });
-                std::size_t val = activate();
-                if (val > max) max = val;
-            }
-            for (std::size_t y = 0; y < m_height; y++) // right side
-            {
-                deactivate();
-                beams.push(Beam{ .x = m_width-1, .y = y, .dir = Direction::Left });
-                std::size_t val = activate();
-                if (val > max) max = val;
-            }
-            for (std::size_t x = 0; x < m_width; x++) // top side
-            {
-                deactivate();
-                beams.push(Beam{ .x = x, .y = 0, .dir = Direction::Down });
-                std::size_t val = activate();
-                if (val > max) max = val;
-            }
-            for (std::size_t x = 0; x < m_width; x++) // bottom side
-            {
-                deactivate();
-                beams.push(Beam{ .x = x, .y = m_height-1, .dir = Direction::Up });
-                std::size_t val = activate();
-                if (val > max) max = val;
-            }
-            return max;
-        }
-
         std::size_t activate()
         {
+            beams.push(Beam{ .x = 0, .y = 0, .dir = Direction::Right });
+
             while (!beams.empty())
             {
                 Beam& b = beams.front();
@@ -260,8 +222,6 @@ class Grid
                 beams.pop();
             }
 
-            std::cout << *this << '\n';
-
             return std::ranges::fold_left(m_data, 0, [](std::size_t sum, const Cell& c){ if (c.hot) sum += 1; return sum; });
         }
 };
@@ -331,7 +291,7 @@ int main(int argc, char** argv)
 
     Grid grid(data);
 
-    std::size_t sum = grid.max_activate();
+    std::size_t sum = grid.activate();
 
     std::cout << "Number energized: " << sum << '\n';
 
